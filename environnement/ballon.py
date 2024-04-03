@@ -1,18 +1,19 @@
-import environnement.parametres as pb
-import air
+import environnement.parametres_ballon as pb
+import environnement.air as air
 import numpy as np
 
 class Ballon:
     def __init__(self, pos = pb.p0, z = pb.z0) -> None:
-        tuple: self.p = pos                #position: latitude puis longitude
-        float: self.z = z                  #altitude
-        float: self.old_z = self.z         #altitude au pas de temps précédent
-        float: self.mv = pb.mv0            #masse volumique dans le ballon
-        float: self.old_mv = self.mv       #masse volumique dans le ballon au pas de temps précédent
-        float: self.s = pb.s0              #charge de la batterie (max c)
-        float: self.de = pb.de0            #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
-        float: self.time = 0.
-        bool: self.soleil = False
+        self.p = pos                #position: latitude puis longitude
+        self.z = z                  #altitude
+        self.old_z = z              #altitude au pas de temps précédent
+        self.mv = pb.mv0            #masse volumique dans le ballon
+        self.old_mv = pb.mv0        #masse volumique dans le ballon au pas de temps précédent
+        self.s = pb.s0              #charge de la batterie (max c)
+        self.de = pb.de0            #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
+        self.time = pb.time         
+        self.duree = pb.duree       #temps écoulé depuis le début de la simulation
+        self.soleil = False         #s'il y a du soleil, ie si la batterie se recharge
 
         self.air = air.Air()
 
@@ -28,12 +29,15 @@ class Ballon:
             r = 0.95 - 0.3 * self.de
         return f * r
     
-    def next_state(self, action:int, soleil:bool) -> None:
-        self.time += pb.dt
-        if(soleil and self.s < pb.c):
+    def next_state(self, action:int) -> None:
+        self.duree += pb.dt
+        if(self.duree >= 6):
+            self.duree = self.duree%6
+            pb.update_time(self.time)
+        if(self.soleil and self.s < pb.c):
             self.s = min(pb.c, self.s + pb.P_in)
         self.update_soleil()
-        self.p = self.air.new_pos(self.p)
+        self.air.new_pos(self.p, pb.conversion_z_to_p(self.z), self.time, pb.dt)
         if(action * (pb.conversion_mv_to_z(pb.mv_prime(self.mv)) - self.z) >= 0):
             self.de = pb.P_out
         else:
@@ -49,7 +53,7 @@ class Ballon:
         self.mv = new_mv
 
     def update_soleil(self) -> None:
-        if((self.time - 6)%24 < 12):
+        if((self.time['hour'] - 6)%24 < 12):
             self.soleil = True
         else:
             self.soleil = False
