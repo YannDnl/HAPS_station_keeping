@@ -1,0 +1,21 @@
+import os
+
+# LOCAL STORAGE
+
+LOCAL_STORAGE_DIR = 'C:\Users\yannd\OneDrive - Ecole Polytechnique\Documents\3-Carriere\30-Etudes\304-Polytechnique\3041-Cours\30410-PSC\code\HAPS_station_keeping\environnement\data'
+STORAGE_DISPLAY_INFO_FILE = os.path.join(LOCAL_STORAGE_DIR, 'storage_display_info.json')
+STORAGE_DISPLAY_FRIENDLY_FILE = os.path.join(LOCAL_STORAGE_DIR, 'storage_display_friendly.json')
+DEFAULT_REQUEST_SIZE_LIMIT = 5000 * 1000 # MB
+MAX_API_REQUEST_SIZE = 4000 # MB
+DATA_TYPE_GET = 'float16'
+WIND_DATA_DIM_ORDER = ['time','longitude','latitude','pressure'] # order of the wind data dimensions for the returned numpy array
+
+# ERA 5
+
+ERA5_MAX_ITEMS_IN_REQUEST = 100000 # there is a condition for the request made, time_len*pressure_len must be below 120000 elements
+                                   # took 100000 as a limit to avoid any problem
+ERA5_MAX_SLEEP_BETWEEN_ATTEMPTS = 600 # (seconds) -> sleeping time between two era5 request attempts is multiplied by 2 at each failure, until reaches maximum
+
+
+
+
