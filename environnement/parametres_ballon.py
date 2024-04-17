@@ -4,7 +4,7 @@ import numpy as np
 
 K = 63162.6             #rapport entre P et mv dans les conditions de pressions et de température étudiés
 g = 9.81                #acceleration de la gravite
-R = 6371000.            #rayon de la terre en km(6356+6378)/2 * 1000
+R = 6371000.            #rayon de la terre en m(6356+6378)/2 * 1000
 A = 1013.25             #Pression atmospherique au niveau de la mer en hPa
 jours = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
@@ -67,8 +67,8 @@ def distance(a, b):
 
 def new_altitude(z: float, old_z: float, mv:float, old_mv) -> float:
     adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
-    f = g * (1 - np.exp(-g * (z - conversion_mv_to_z(mv_prime(mv)))/K))
-    ans = (4 * z - 2 * f * (dt**2) + - (adt + 2) * old_z)/(2 - adt)
+    f = g * (1 - np.exp(-g * (conversion_p_to_z(z) - conversion_mv_to_z(mv_prime(mv)))/K))
+    ans = (4 * conversion_p_to_z(z) - 2 * f * (dt**2) + - (adt + 2) * conversion_p_to_z(old_z))/(2 - adt)
     return ans
 
 ##Evolution du temps
