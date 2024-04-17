@@ -52,6 +52,7 @@ class Ballon:
         self.z, self.old_z = pb.new_altitude(self.z, self.old_z, new_mv, self.old_mv), self.z
         self.old_mv = self.mv
         self.mv = new_mv
+        return self.get_reward()
 
     def update_soleil(self) -> None:
         if((self.time['hour'] - 6)%24 < 12):
@@ -59,7 +60,7 @@ class Ballon:
         else:
             self.soleil = False
 
-    def get_inputs(self, action):#inclure air et reward, tout normaliser
+    def get_inputs(self, action = 0):#inclure air et reward, tout normaliser
         ans = []
         ans.append((self.z - pb.conversion_z_to_p(20000))/(pb.conversion_z_to_p(15000) - pb.conversion_z_to_p(20000)))
         ans.append(self.s/pb.c)
