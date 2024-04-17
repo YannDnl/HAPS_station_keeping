@@ -25,7 +25,7 @@ c = 10000000.           #capacité de la batterie en joule (ici environ 3kWh, 10
 ##Paramètres du modèle
 cd = 0.4                #saut de la fonction reward
 T = 100.                #distance caractéristique de la fonction reward
-dt = 1                  #Pas de temps du modèle
+dt = 0.1                #Pas de temps du modèle, doit diviser 6 pour la méthode next_state de la classe ballon
 dmv = 0.01              #Pas de masse volumique
 P_out = n * K * V * dmv #Pas de consomation d'énergie
 P_in = 0                #Pas de production d'énergie (panneau solaires)
@@ -33,14 +33,11 @@ P_in = 0                #Pas de production d'énergie (panneau solaires)
 ##Données initiales
 
 s0 = 0.5                #charge initiale de la batterie
-p0 = [45., 0.]          #latitude (S-N) dans (-90, 90) puis longitude (E-W) dans (-180, 180) initiales
-z0 = 17000              #altitude mesuré par la pression en hPa allant 5 kPa (20km) to 14 kPa (15km)
 mv0 = 0.0844            #masse volumique initiale dans le ballon, en kg/m3 telle que le ballon soit stable à l'altitude z0
 de0 = 0.                #energie consommé initiale
-time = {'year': 2020, 'month': 1, 'day': 1, 'hour': 0}
-duree = 0.
 
 ##Liens entre différentes grandeurs
+#z en m, p en hPa, mv en kg.m^-3
 
 def conversion_z_to_p(z):
     return A * np.exp(-z * g/K)
@@ -65,6 +62,9 @@ def mv_prime(mv):
 
 ##Trajectoire
 
+def distance(a, b):
+    return R * np.arccos(np.cos((a[0] - b[0]) * np.pi/180) * np.cos((a[1] - b[1]) * np.pi/180))
+
 def new_altitude(z: float, old_z: float, mv:float, old_mv) -> float:
     adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
     f = g * (1 - np.exp(-g * (z - conversion_mv_to_z(mv_prime(mv)))/K))
@@ -74,7 +74,7 @@ def new_altitude(z: float, old_z: float, mv:float, old_mv) -> float:
 ##Evolution du temps
 
 def update_time(time):
-    time['hour'] = time['hour'] + 6
+    time['hour'] += 6
     if(time['hour'] >= 24):
         time['hour'] = time['hour']%24
         time['day'] += 1

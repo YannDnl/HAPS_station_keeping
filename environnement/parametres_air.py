@@ -6,7 +6,7 @@ R = pb.R
 
 ##Récupération du vent
 
-def interpolation(pos, pressure, hour, vent, request_bounds, time) -> list:#vent liste des liste de vents a interpoler
+def interpolation(pos, pressure, hour, vent, request_bounds) -> list:#vent liste des liste de vents a interpoler
     ans = []
     test = False
     longueur = 1
@@ -25,6 +25,7 @@ def interpolation(pos, pressure, hour, vent, request_bounds, time) -> list:#vent
                         plat = 1 - np.abs(request_bounds['latitude'][lat] - pos[0])/2.5
                         sum += vent[t][l + p][lon][lat] * pt * pp * plon * plat
         ans.append(sum)
+    return ans
 
 def recherche(liste: list, x: float) -> list:
     low = 0
@@ -35,7 +36,7 @@ def recherche(liste: list, x: float) -> list:
             high = (high + low)//2
         else:
             low = (high + low)//2
-    return [liste[low], liste[high]]
+    return low
 
 def date_vent(time):
     start_date = datetime.datetime(year = time['year'], month = time['month'], day = time['day'], hour = time['hour'])

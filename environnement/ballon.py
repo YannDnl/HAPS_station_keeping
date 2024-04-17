@@ -3,7 +3,7 @@ import environnement.air as air
 import numpy as np
 
 class Ballon:
-    def __init__(self, pos = pb.p0, z = pb.z0) -> None:
+    def __init__(self, vent, time, pos, z, target) -> None:
         self.p = pos                #position: latitude puis longitude
         self.z = z                  #altitude
         self.old_z = z              #altitude au pas de temps précédent
@@ -11,14 +11,15 @@ class Ballon:
         self.old_mv = pb.mv0        #masse volumique dans le ballon au pas de temps précédent
         self.s = pb.s0              #charge de la batterie (max c)
         self.de = pb.de0            #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
-        self.time = pb.time         
-        self.duree = pb.duree       #temps écoulé depuis le début de la simulation
+        self.time = time            #dictionnaire des coordonées temporelles
         self.soleil = False         #s'il y a du soleil, ie si la batterie se recharge
+        self.update_soleil()
+        self.target = target
 
-        self.air = air.Air()
+        self.air = air.Air(vent)
 
-    def get_reward(self, objectif:tuple) -> float:
-        delta = pb.R * np.arccos(np.cos((objectif[0] - self.p[0]) * np.pi/180) * np.cos((objectif[1] - self.p[1]) * np.pi/180))
+    def get_reward(self) -> float:
+        delta = pb.distance(self.target, self.p)
         if delta < 50:
             f = 1.0
         else:
@@ -30,9 +31,8 @@ class Ballon:
         return f * r
     
     def next_state(self, action:int) -> None:
-        self.duree += pb.dt
-        if(self.duree >= 6):
-            self.duree = self.duree%6
+        self.time['steps'] += pb.dt
+        if(self.time['steps']%6 == 0):
             pb.update_time(self.time)
         if(self.soleil and self.s < pb.c):
             self.s = min(pb.c, self.s + pb.P_in)
