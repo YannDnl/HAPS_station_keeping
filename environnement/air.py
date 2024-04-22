@@ -7,7 +7,8 @@ class Air:
         self.longitude = np.array([i * 2.5 for i in range(144)])      #de 0 à 357.5 avec un pas de 2.5
         self.latitude = np.array([-90 + i * 2.5 for i in range(73)])  #de -90 à 90 avec un pas de 2.5
         self.pressure = np.array([10., 20., 30., 50., 70., 100., 150., 200., 250., 300., 400., 500., 600., 700., 850., 925., 1000.])
-        self.data_vent = vent #vent[time][pressure][longitude][latitude]
+        self.data_vent = vent #vent[time][pressure][longitude][latitude]->[u, v]
+        #base de donnée: mesure toute les 6h
         #Pression en hPa
 
     def get_vent(self, pos: tuple, time: dict, target) -> list:
