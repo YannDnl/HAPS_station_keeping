@@ -48,19 +48,23 @@ class Flotte:
         return [altitudes, charges, distances, bearings, lights, actions]
 
     def plot(self):
-        x = [self.list_ballon[i].pos[0] for i in range(self.n)]
-        y = [self.list_ballon[i].pos[1] for i in range(self.n)]
-        plt.scatter(x, y, color='blue', label='Balloons')
+        lat = [self.list_ballon[i].pos[0] for i in range(self.n)]
+        lon = [self.list_ballon[i].pos[1] for i in range(self.n)]
+        plt.scatter(lon, lat, color='blue', label='Balloons')
 
         # Plot the red point at the center
-        plt.scatter(self.target[0], self.target[1], color='red', label='Target')
+        plt.scatter(self.target[1], self.target[0], color='red', label='Target')
 
         # Plot the circle around the center
-        circle = plt.Circle(self.target, 50000 * 180/(pb.R * np.pi), color='green', fill=False, label='Objective')
+        circle = plt.Circle([self.target[1], self.target[0]], 50000 * 180/(pb.R * np.pi), color='green', fill=False, label='Objective')
         plt.gca().add_patch(circle)
 
         # Set aspect ratio to equal to get a circular plot
         plt.axis('equal')
+
+        plt.xlabel('Longitude')
+        plt.ylabel('Latitude')
+
 
         # Add legend
         plt.legend()

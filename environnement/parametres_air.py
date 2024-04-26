@@ -16,7 +16,7 @@ def interpolation(pos, pressure, hour, vent, request_bounds) -> list:#vent liste
     for l in range(len(pressure)):
         sum = np.zeros(2)
         for t in range(len(request_bounds['time'])):
-            pt = 1 - np.abs(hour%6 - t * 6)/6
+            pt = 1 - np.abs(hour%6 - t * 6)/6.
             for p in range(longueur):
                 pp = 1 - test * np.abs(request_bounds['pressure'][p] - pressure[0])/(request_bounds['pressure'][1] - request_bounds['pressure'][0])
                 for lon in range(len(request_bounds['longitude'])):

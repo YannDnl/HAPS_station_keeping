@@ -15,7 +15,7 @@ n = 10
 HAPS = flotte.Flotte(n, donnee_vent, start_time, target)
 pilote = agent.Agent(n)
 HAPS.plot()
-for _ in range(3):
+for _ in range(10):
     HAPS.next_state(pilote.get_action(HAPS.get_inputs()))
 
 HAPS.plot()
