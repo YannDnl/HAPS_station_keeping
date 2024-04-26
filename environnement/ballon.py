@@ -3,8 +3,8 @@ import environnement.air as air
 import numpy as np
 
 class Ballon:
-    def __init__(self, vent, time, pos, z, target) -> None:
-        self.pos = pos                #position: latitude puis longitude
+    def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple) -> None:
+        self.pos = pos              #position: latitude puis longitude
         self.z = z                  #altitude par la pression
         self.old_z = z              #altitude au pas de temps précédent
         self.mv = pb.mv0            #masse volumique dans le ballon
@@ -16,6 +16,7 @@ class Ballon:
         self.update_soleil()
         self.target = target
         self.bearing = [0, 0]
+        self.last_action = 0
 
         self.air = air.Air(vent)
 
@@ -32,6 +33,7 @@ class Ballon:
         return f * r
     
     def next_state(self, action:int) -> None:
+        self.last_action = action
         self.time['steps'] += pb.dt
         if(self.time['steps']%6 == 0):
             pb.update_time(self.time)
@@ -60,7 +62,7 @@ class Ballon:
         else:
             self.soleil = False
 
-    def get_inputs(self, action = 0):#inclure air et reward, tout normaliser
+    def get_inputs(self):#inclure air et reward, tout normaliser
         ans = []
         ans.append((self.z - pb.conversion_z_to_p(20000))/(pb.conversion_z_to_p(15000) - pb.conversion_z_to_p(20000)))
         ans.append(self.s/pb.c)
@@ -68,7 +70,7 @@ class Ballon:
         ans.append(d/(d + 250000))
         ans.append(self.bearing)
         ans.append(self.soleil)
-        ans.append(action)
+        ans.append(self.last_action)
         ans.append(self.air.get_vent(self.pos, self.time, self.target))
         return ans
 

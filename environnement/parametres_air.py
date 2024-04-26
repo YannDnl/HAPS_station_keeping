@@ -27,7 +27,7 @@ def interpolation(pos, pressure, hour, vent, request_bounds) -> list:#vent liste
         ans.append(sum)
     return ans
 
-def recherche(liste: list, x: float) -> list:
+def recherche(liste: list, x: float) -> int:
     low = 0
     high = len(liste) - 1
     while(high - low > 1):
@@ -44,3 +44,11 @@ def date_vent(time):
     pb.update_time(copy)
     end_date = datetime.datetime(year = copy['year'], month = copy['month'], day = copy['day'], hour = copy['hour'])
     return [start_date, end_date]
+
+def update_longitude(teta):
+    while(teta > 90 or teta < -90):
+        if(teta > 90):
+            teta = 180 - teta
+        else:
+            teta = -180 -teta
+    return teta

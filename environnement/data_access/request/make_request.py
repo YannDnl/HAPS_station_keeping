@@ -154,6 +154,7 @@ def fetch_data_single_file(file_path, restricted_metadata):
     if os.path.exists(file_path):
         temp_file_path = file_path.rstrip('.nc') + '(1).nc'
         fetched_data.to_netcdf(temp_file_path, mode='w')
+        print(file_path)
         os.remove(file_path)
         os.rename(temp_file_path, file_path)
     # add a progress bar to track the evolution of the writing

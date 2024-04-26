@@ -2,7 +2,7 @@ import os
 
 # LOCAL STORAGE
 
-LOCAL_STORAGE_DIR = 'C:\Users\yannd\OneDrive - Ecole Polytechnique\Documents\3-Carriere\30-Etudes\304-Polytechnique\3041-Cours\30410-PSC\code\HAPS_station_keeping\environnement\data'
+LOCAL_STORAGE_DIR = '/Users/yannd/OneDrive - Ecole Polytechnique/Documents/3-Carriere/30-Etudes/304-Polytechnique/3041-Cours/30410-PSC/HAPS_station_keeping/environnement/data'
 STORAGE_DISPLAY_INFO_FILE = os.path.join(LOCAL_STORAGE_DIR, 'storage_display_info.json')
 STORAGE_DISPLAY_FRIENDLY_FILE = os.path.join(LOCAL_STORAGE_DIR, 'storage_display_friendly.json')
 DEFAULT_REQUEST_SIZE_LIMIT = 5000 * 1000 # MB
