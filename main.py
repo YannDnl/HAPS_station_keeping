@@ -7,20 +7,26 @@ import environnement.data as data
 time = {'year': 2020, 'month': 1, 'day': 1, 'hour': 0, 'steps': 0}
 
 target, start_time = pe.position_initiale(time)
-
 donnee_vent = data.get_data(start_time)
 
 n = 10
+size = 1
+t = 1000
+pilote_rd = agent.RandomAgent(n)
+pilote_p = agent.PassiveAgent(n)
 
-HAPS = flotte.Flotte(n, donnee_vent, start_time, target)
-pilote = agent.Agent(n)
-HAPS.plot()
-for _ in range(10):
-    HAPS.next_state(pilote.get_action(HAPS.get_inputs()))
+l = []
 
-HAPS.plot()
-#pilote = agent.Agent()
-
-#for _ in range (100):
-#    action = pilote.get_action(haps.get_inputs)
-#    haps.next_state(action)
+for _ in range(size):
+    target, start_time = pe.position_initiale(time)
+    donnee_vent = data.get_data(start_time)
+    HAPS = flotte.Flotte(n, donnee_vent, start_time, target, show = True)
+    #HAPS.plot()
+    ans = 0
+    for _ in range(t):
+        ans += HAPS.next_state(pilote_p.get_action(HAPS.get_inputs()))//1
+    l.append(ans/t)
+    #HAPS.plot()
+    HAPS.plot()
+print(l)
+print(sum(l)/size)

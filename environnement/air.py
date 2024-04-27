@@ -34,9 +34,9 @@ class Air:
         request_bounds = {'time': [t, t + 1], 'pressure': [self.pressure[low_p], self.pressure[low_p + 1]], 'latitude': [self.latitude[low_lat], self.latitude[low_lat + 1]], 'longitude': [self.longitude[low_lon], self.longitude[low_lon + 1]]}
         vent = pa.interpolation(pos, [pressure], time['steps'], request_vent, request_bounds)[0]
         vent[0], vent[1] = vent[1], vent[0]
-        pos[0] += 180 * vent[0] * dt/(np.pi * pa.R)
+        pos[0] += 180 * vent[0] * dt * 3600/(np.pi * pa.R)
         pos[0] = pa.update_longitude(pos[0])
-        pos[1] += 180 * vent[1] * dt/(np.pi * pa.R)
+        pos[1] += 180 * vent[1] * dt * 3600/(np.pi * pa.R)
         pos[1] = pos[1]%360
         vector = np.array(target) - np.array(pos)
         return np.array([np.dot(vent, vector), np.cross(vent, vector)])/(np.linalg.norm(vent) * np.linalg.norm(vector))

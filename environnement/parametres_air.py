@@ -1,7 +1,6 @@
 import numpy as np
 import datetime
 import environnement.parametres_ballon as pb
-
 R = pb.R
 
 ##Récupération du vent

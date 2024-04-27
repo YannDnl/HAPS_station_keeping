@@ -4,15 +4,15 @@ import numpy as np
 
 class Ballon:
     def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple) -> None:
-        self.pos = pos              #position: latitude puis longitude
-        self.z = z                  #altitude par la pression
-        self.old_z = z              #altitude au pas de temps précédent
-        self.mv = pb.mv0            #masse volumique dans le ballon
-        self.old_mv = pb.mv0        #masse volumique dans le ballon au pas de temps précédent
-        self.s = pb.s0              #charge de la batterie (max c)
-        self.de = pb.de0            #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
-        self.time = time            #dictionnaire des coordonées temporelles
-        self.soleil = False         #s'il y a du soleil, ie si la batterie se recharge
+        self.pos = pos                      #position: latitude puis longitude
+        self.z = z                          #altitude par la pression
+        self.old_z = z                      #altitude au pas de temps précédent
+        self.mv = pb.conversion_p_to_mv(z) - pb.m/pb.V  #masse volumique dans le ballon
+        self.old_mv = self.mv               #masse volumique dans le ballon au pas de temps précédent
+        self.s = pb.s0                      #charge de la batterie (max c)
+        self.de = pb.de0                    #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
+        self.time = time                    #dictionnaire des coordonées temporelles
+        self.soleil = False                 #s'il y a du soleil, ie si la batterie se recharge
         self.update_soleil()
         self.target = target
         self.bearing = [0, 0]
@@ -47,7 +47,7 @@ class Ballon:
             self.de = 0
         if(self.de <= self.s):
             self.s -= self.de
-            new_mv = self.mv + (-1) * action * pb.dmv
+            new_mv = max(0, self.mv + (-1) * action * pb.dmv)
         else:
             self.de = 0
             new_mv = self.mv

@@ -48,9 +48,9 @@ def request_vent(request_item):
 def get_data(start_date):
     start_time = datetime.datetime(year = start_date['year'], month = start_date['month'], day = start_date['day'], hour = start_date['hour'])
     end_time = start_date
-    for _ in range((int(pe.duration) + 1) * 4):
+    for _ in range((int(pe.duration) + 2) * 4):
         pb.update_time(end_time)
-    back_time(end_time)
+    #back_time(end_time)
     end_time = datetime.datetime(year = end_time['year'], month = end_time['month'], day = end_time['day'], hour = end_time['hour'])
     request_item['bounds']['time'] = np.array([start_time, end_time])
     request_item['bounds']['latitude'] = np.array([-90 + i * 2.5 for i in range(73)])  #de -90 à 90 avec un pas de 2.5
