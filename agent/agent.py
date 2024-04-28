@@ -13,3 +13,4 @@ class PassiveAgent:
     
     def get_action(self, inputs):
         return [0 for _ in range(self.n)]
+    

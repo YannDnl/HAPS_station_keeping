@@ -2,7 +2,7 @@ import environnement.parametres_ballon as pb
 import random as rd
 import numpy as np
 
-nb_steps = 10000    #duree d'une session en nombres de pas
+nb_steps = 25000    #duree d'une session en nombres de pas
 duration = pb.dt * nb_steps/24
 
 #choisir un index uniformément dans (0, (365 - (duree d'une session d'entrainement en jours)) * 4 - 1) pour le start

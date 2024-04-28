@@ -22,7 +22,11 @@ def interpolation(pos, pressure, hour, vent, request_bounds) -> list:#vent liste
                     plon = 1 - np.abs(request_bounds['longitude'][lon] - pos[1])/2.5
                     for lat in range(len(request_bounds['latitude'])):
                         plat = 1 - np.abs(request_bounds['latitude'][lat] - pos[0])/2.5
-                        sum += vent[t][l + p][lon][lat] * pt * pp * plon * plat
+                        try :
+                            sum += vent[t][l + p][lon][lat] * pt * pp * plon * plat
+                        except:
+                            print(t, l+p, lon, lat, vent.shape)
+                            raise ValueError
         ans.append(sum)
     return ans
 

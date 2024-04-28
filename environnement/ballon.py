@@ -3,7 +3,7 @@ import environnement.air as air
 import numpy as np
 
 class Ballon:
-    def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple) -> None:
+    def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple, seul = False) -> None:
         self.pos = pos                      #position: latitude puis longitude
         self.z = z                          #altitude par la pression
         self.old_z = z                      #altitude au pas de temps précédent
@@ -17,11 +17,20 @@ class Ballon:
         self.target = target
         self.bearing = [0, 0]
         self.last_action = 0
+        self.seul = seul
 
         self.air = air.Air(vent)
 
-    def get_reward(self) -> float:
+    def copy(self):
+        return Ballon(self.air.data_vent, self.time, self.pos.copy(), self.z, self.target, self.seul)
+    
+    def get_reward(self, dist_inv = True) -> float:
+
         delta = pb.distance(self.target, self.pos)
+
+        if dist_inv:
+            return -delta
+        
         if delta < 50:
             f = 1.0
         else:
@@ -34,9 +43,10 @@ class Ballon:
     
     def next_state(self, action:int) -> None:
         self.last_action = action
-        self.time['steps'] += pb.dt
-        if(self.time['steps']%6 == 0):
-            pb.update_time(self.time)
+        if(self.seul):
+            self.time['steps'] += pb.dt
+            if(self.time['steps']%6 == 0):
+                pb.update_time(self.time)
         if(self.soleil and self.s < pb.c):
             self.s = min(pb.c, self.s + pb.P_in)
         self.update_soleil()

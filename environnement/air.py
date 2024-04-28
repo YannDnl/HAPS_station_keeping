@@ -22,8 +22,8 @@ class Air:
         ans = []
         for k in range(len(vent)):
             x = np.linalg.norm(vent[k])
-            ans.append([x/(x + 30), ((np.angle(complex(vent[k][1], vent[k][0])) - angle)/np.pi)%1])
-        return ans
+            ans.append([x/(x + 30), np.abs(((np.angle(complex(vent[k][1], vent[k][0])) - angle + np.pi)%(2*np.pi) - np.pi)/np.pi)])
+        return np.array(ans)
     
     def new_pos(self, pos: list, pressure: float, time: dict, dt: float, target: tuple):
         t = int(time['steps']//6)

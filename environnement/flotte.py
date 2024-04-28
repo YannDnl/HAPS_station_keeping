@@ -4,6 +4,7 @@ import environnement.parametres_air as pa
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 class Flotte:
     def __init__(self, n:int, vent:list, time:dict, target:list, show = False) -> None:
@@ -20,7 +21,16 @@ class Flotte:
             if(self.show):
                 self.trajectory.append([lat, lon, pb.conversion_p_to_z(z)])
         self.target = target
-    
+
+    def copy(self):
+        copie = Flotte(self.n, self.list_ballon[0].air.data_vent, copy.deepcopy(self.time), self.target, show = self.show)
+        copie.list_ballon = []
+        for ind in range(self.n):
+
+            copie.list_ballon.append(self.list_ballon[ind].copy())
+        copie.trajectory = copy.deepcopy(self.trajectory)
+        return copie
+
     def get_reward(self):
         ans = [self.list_ballon[k].get_reward() for k in range(self.n)]
         return np.max(ans)
@@ -53,7 +63,7 @@ class Flotte:
             altitudes.append(l.pop())
         return [altitudes, charges, distances, bearings, lights, actions]
 
-    def plot(self):
+    def plot(self, title = ''):
         if(self.show):
             fig, (ax1, ax2) = plt.subplots(1, 2)
             for k in range(self.n):
@@ -62,12 +72,15 @@ class Flotte:
                 lon = [l[i][0] for i in range(len(l))]
                 z = [l[i][2] for i in range(len(l))]
                 ax1.scatter(lat[0], lon[0], color = 'blue', label='Position initiale')
-                ax1.scatter(lat[-1], lon[-1], color = 'orange', label='Position finale')
+                # ax1.scatter([lat[i] for i in range(0,len(l), 500)], [lon[i] for i in range(0,len(l), 500)])
                 ax1.plot(lat, lon)
+                ax1.scatter(lat[-1], lon[-1], color = 'orange', label='Position finale')
                 ax2.plot(z)
             ax1.set_title('Trajectoire')
             ax1.set_xlabel('Longitude')
             ax1.set_ylabel('Latitude')
+            ax1.set_xlim(self.target[1] -2.5 , self.target[1] +2.5) 
+            ax1.set_ylim(self.target[0] -2.5 , self.target[0] +2.5) 
             ax1.scatter(self.target[1], self.target[0], color='red', label='Target')
             circle = plt.Circle([self.target[1], self.target[0]], 50000 * 180/(pb.R * np.pi), color='green', fill=False, label='Objective')
             ax1.add_patch(circle)
@@ -99,4 +112,5 @@ class Flotte:
             plt.legend()
 
         # Show plot
+        plt.title(title)
         plt.show()

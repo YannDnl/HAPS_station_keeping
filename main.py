@@ -27,6 +27,7 @@ for _ in range(size):
         ans += HAPS.next_state(pilote_p.get_action(HAPS.get_inputs()))//1
     l.append(ans/t)
     #HAPS.plot()
+    print(start_time)
     HAPS.plot()
 print(l)
 print(sum(l)/size)
