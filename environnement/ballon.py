@@ -6,9 +6,9 @@ class Ballon:
     def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple, seul = False) -> None:
         self.pos = pos                      #position: latitude puis longitude
         self.z = z                          #altitude par la pression
-        self.old_z = z                      #altitude au pas de temps précédent
+        self.dzdt = 0                      #altitude au pas de temps précédent
         self.mv = pb.conversion_p_to_mv(z) - pb.m/pb.V  #masse volumique dans le ballon
-        self.old_mv = self.mv               #masse volumique dans le ballon au pas de temps précédent
+        self.dmvdt = 0               #masse volumique dans le ballon au pas de temps précédent
         self.s = pb.s0                      #charge de la batterie (max c)
         self.de = pb.de0                    #energie consommé (normalisée) /!\ voir si c'est à t ou t+1
         self.time = time                    #dictionnaire des coordonées temporelles
@@ -61,8 +61,8 @@ class Ballon:
         else:
             self.de = 0
             new_mv = self.mv
-        self.z, self.old_z = pb.new_altitude(self.z, self.old_z, new_mv, self.old_mv), self.z
-        self.old_mv = self.mv
+        self.z, self.dzdt = pb.new_altitude(pb.conversion_p_to_z(self.z), self.dzdt, new_mv, self.dmvdt)
+        self.dmvdt = (new_mv - self.mv)/(pb.dt * 3600)
         self.mv = new_mv
         return self.get_reward()
 

@@ -65,11 +65,18 @@ def mv_prime(mv):
 def distance(a, b):
     return R * np.arccos(np.cos((a[0] - b[0]) * np.pi/180) * np.cos((a[1] - b[1]) * np.pi/180))/1000
 
-def new_altitude(z: float, old_z: float, mv:float, old_mv) -> float:
-    adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
-    f = g * (1 - conversion_p_to_mv(z)/(mv_prime(mv)))
-    ans = ((4 + adt) * conversion_p_to_z(z) - 2 * f * ((dt * 3600)**2) - (adt + 2) * conversion_p_to_z(old_z))/2
-    return conversion_z_to_p(ans)
+def f(z, mv):
+    return conversion_z_to_mv(z)/mv_prime(mv)
+
+def new_altitude(z: float, dzdt: float, mv:float, dmvdt) -> float:
+    t = dt * 3600
+    a = dmvdt/mv_prime(mv)
+    new_dzdt = dzdt * (1 - t * (a + (1 - a * t) * (a))/2) - t * g * ((1 - f(z, mv)) * (1 - t * (a)) + 1 - f(z + dzdt * t, mv + dmvdt * t))/2
+    new_z = z + t * (dzdt + new_dzdt)/2
+    #adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
+    #f = g * (1 - conversion_z_to_mv(z)/(mv_prime(mv)))
+    #new_z = ((4 + adt) * z - 2 * f * ((dt * 3600)**2) - (adt + 2) * old_z)/2
+    return conversion_z_to_p(new_z), new_dzdt
 
 ##Evolution du temps
 

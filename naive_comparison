@@ -34,5 +34,5 @@ pb.dt = 0.05
 naive.main(HAPS.copy(), copy.deepcopy(time), target, aero, n, pe.nb_steps, pas=pas)
 naive_yd.main(HAPS.copy(), copy.deepcopy(time), target, aero, n, pe.nb_steps, pas=pas)
 naive_ak.main(HAPS.copy(), copy.deepcopy(time), target, aero, n, pe.nb_steps, pas=pas)
-naive_em.main(HAPS.copy(), copy.deepcopy(time), target, aero, n, pe.nb_steps, pas=pas)
+#naive_em.main(HAPS.copy(), copy.deepcopy(time), target, aero, n, pe.nb_steps, pas=pas)
 
