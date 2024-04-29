@@ -142,7 +142,7 @@ def check_if_list_or_single(element):
                                       element[-1]['month'],
                                       element[-1]['day'],
                                       element[-1]['hour'])])
-        return np.array(element)
+        return element
 
     else:
         if isinstance(element, dict):
@@ -150,7 +150,7 @@ def check_if_list_or_single(element):
                                       element['month'],
                                       element['day'],
                                       element['hour'])])
-        return np.array([element])
+        return element
 
 
 def fill_metadata(request_item, metadata, one_day_dimensions):
