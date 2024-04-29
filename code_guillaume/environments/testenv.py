@@ -7,96 +7,80 @@ import pygame
 ## d,n = tab.shape
 ## print([[tab[i,j] for i in range(d)] for j in range(n)])
 
+def rand_vec(maxs, mins=None):
+    if mins == None:
+        mins = np.zeros(len(maxs))
+    return np.array([np.randint(mins[i], maxs[i]) for i in len(maxs)])
+
 class TestEnv(gym.Env):
     '''
-    Crée un environnement 2D modélisant une version simplifiée du problème
+    CrÃ©e un environnement 2D modÃ©lisant une version simplifiÃ©e du problÃ¨me
     '''
-    def __init__(self, wind, start, goal, max_steps=200, random_mode=0, max_dev=1, state_mode=0, radius=1):
+    def __init__(self, wind, max_steps=200, random_mode=1, max_dev=1, radius=3, render_mode=None):
         super(TestEnv, self).__init__()
 
-        # Paramètres annexes de tests
+        # ParamÃ¨tres annexes de tests
         self.random_mode = random_mode
-        self.state_mode = state_mode
+        self.render_mode = render_mode
         self.max_dev = max_dev
-        if self.random_mode == 2:
-            r,c = wind.shape
-            self.wind = np.random.randint(low=-self.max_dev, high=self.max_dev+1, size=wind.shape)
-            self.start_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-            self.goal_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-        elif self.random_mode == 1:
-            r,c = wind.shape
-            self.wind = np.array(wind)
-            self.start_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-            self.goal_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-        else:
-            self.wind = np.array(wind)
-            self.start_pos = start
-            self.goal_pos = goal
+        
+        self.wind = np.array(wind)
+        x, y = self.wind.shape
 
         # Initialisation de la position de l'agent
-        self.current_pos = self.start_pos
         self.radius = radius
 
-        # Définition de constantes utiles 
-        self.env_shape = self.wind.shape
-        self.num_rows, self.num_cols = self.env_shape
+        # DÃ©finition de constantes utiles 
+        self.max_vect = np.array([self.wind.shape[0]-1, self.wind.shape[1]-1])
 
-        # Paramètres pour éviter des épisodes infinis
+        self.env_shape = (1,x,y)
+
+        # ParamÃ¨tres pour Ã©viter des Ã©pisodes infinis
         self.count = 0
         self.max_steps = max_steps
 
         # Encodage des actions
-        # x = n/2: Immobile, x > n/2: Monter de x - n/2, x < n/2: Descendre de n/2 - x
-        self.action_space = spaces.Discrete(n=self.env_shape[0])
-        self.observation_space = spaces.MultiDiscrete(self.env_shape)
+        self.action_space = spaces.Discrete(n=3, start=0)
+        self.observation_space = spaces.Dict({"wind": spaces.Box(high=(self.max_dev+1)*np.ones(self.env_shape), low=-self.max_dev*np.ones(self.env_shape), shape=self.env_shape), "pos" : spaces.Box(low=0, high=self.max_vect, shape=self.max_vect.shape), "obj" : spaces.Box(low=0, high=self.max_vect, shape=self.max_vect.shape)})
 
         # Affichage
         self.cell_size = 10
         self.screen = None
 
-    def reset(self):
+    def reset(self, **kwargs):
         '''
-        Réinitialise la position de l'agent et l'environnement (en fonction de paramètres)
+        RÃ©initialise la position de l'agent et l'environnement (en fonction de paramÃ¨tres)
         '''
-        if self.random_mode == 2:
+        if self.random_mode == 1:
             r,c = self.wind.shape
             self.wind = np.random.randint(low=-self.max_dev, high=self.max_dev+1, size=self.wind.shape)
-            self.start_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
+            self.current_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
             self.goal_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-        elif self.random_mode == 1:
+        else:
             r,c = self.wind.shape
-            self.start_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
+            self.current_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
             self.goal_pos = [np.random.randint(low=0,high=r), np.random.randint(low=0,high=c)]
-        self.current_pos = self.start_pos
         self.count = 0
-        return self.currentstate()
+        return self.currentstate(), {}
     
     def currentstate(self):
         '''
-        Renvoie l'état actuel de l'agent
-        En fonction des paramètres, renvoie : [position, objectif] ou [position, objectif, vents] ou [position]
+        Renvoie l'Ã©tat actuel de l'agent
+        En fonction des paramÃ¨tres, renvoie : [position, objectif] ou [position, objectif, vents] ou [position]
         '''
-        if self.state_mode == 0:
-            return np.concatenate((self.current_pos, self.goal_pos, self.wind.flatten()))
-        if self.state_mode == 1:
-            return np.concatenate((self.current_pos, self.goal_pos))
-        return self.current_pos
+        return {"wind" : self.wind.reshape(self.env_shape), "pos" : self.current_pos, "obj" : self.goal_pos}
 
     def step(self, action):
         '''
-        Fait faire l'action passée en paramètre à l'agent et renvoie :
+        Fait faire l'action passÃ©e en paramÃ¨tre Ã  l'agent et renvoie :
         (nouvel_etat, reward, fini, )
         '''
-        new_pos = np.array(self.current_pos)
         # Traduction de l'action en mouvement vertical
-        mvt = action - self.env_shape[0]//2
+        mvt = np.array([self.get_wind(), action - 1])
         
         # Calcul de la nouvelle position verticale
-        new_pos[0] = np.floor(max(min(self.num_rows - 1, new_pos[0] + mvt), 0))
-        # Déduction de la nouvelle position horizontale
-        new_pos[1] = np.floor(max(0, min(self.num_cols - 1, new_pos[1] + self.wind[self.current_pos[0],self.current_pos[1]])))
 
-        self.current_pos = new_pos
+        self.current_pos = np.maximum(np.minimum(self.current_pos + mvt, self.max_vect), np.zeros((2)))
 
         self.count += 1
 
@@ -104,7 +88,12 @@ class TestEnv(gym.Env):
         # Calcul du reward en fonction de la position
         reward = self.reward(action)
 
-        return self.currentstate(), reward, done, {}
+        self.render(self.render_mode)
+        if done :
+            pygame.quit()
+            self.screen = None
+
+        return self.currentstate(), reward, done, False, {}
     
     def render(self, mode=None):
         '''
@@ -115,28 +104,25 @@ class TestEnv(gym.Env):
         
         if self.screen == None:
             pygame.init()
-            self.screen = pygame.display.set_mode((self.num_cols * self.cell_size, self.num_rows * self.cell_size))
+            x, y = self.wind.shape
+            self.screen = pygame.display.set_mode((x*self.cell_size, y*self.cell_size))
 
         self.screen.fill((255, 255, 255))  
 
-        for row in range(self.num_rows):
-            for col in range(self.num_cols):
-                cell_left = col * self.cell_size
-                cell_top = row * self.cell_size
-                wind = self.wind[row, col]
+        mxwd = np.max(np.abs(self.wind))
+        for x, col in enumerate(self.wind):
+            for y, wind in enumerate(col):
+                cell_left = x * self.cell_size
+                cell_top = y * self.cell_size
                 if wind > 0:
-                    pygame.draw.rect(self.screen, (0, 255*wind/(np.max(np.abs(self.wind))), 0), (cell_left, cell_top, self.cell_size, self.cell_size))
+                    pygame.draw.rect(self.screen, (0, 255*wind/mxwd, 0), (cell_left, cell_top, self.cell_size, self.cell_size))
                 elif wind < 0:
-                    pygame.draw.rect(self.screen, (-255*wind/(np.max(np.abs(self.wind))), 0, 0), (cell_left, cell_top, self.cell_size, self.cell_size))
+                    pygame.draw.rect(self.screen, (-255*wind/mxwd, 0, 0), (cell_left, cell_top, self.cell_size, self.cell_size))
                 else:
                     pygame.draw.rect(self.screen, (0, 0, 0), (cell_left, cell_top, self.cell_size, self.cell_size))
                 
-                if np.array_equal(np.array(self.current_pos), np.array([row, col])):
-                    pygame.draw.rect(self.screen, (0, 0, 255), (cell_left, cell_top, self.cell_size, self.cell_size))
-                if np.array_equal(np.array(self.goal_pos), np.array([row, col])):
-                    pygame.draw.rect(self.screen, (0, 255, 255), (cell_left, cell_top, self.cell_size, self.cell_size))
-                if np.array_equal(np.array(self.start_pos), np.array([row, col])):
-                    pygame.draw.rect(self.screen, (255, 255, 0), (cell_left, cell_top, self.cell_size, self.cell_size))
+        pygame.draw.circle(self.screen, (255, 255, 0), (float(self.goal_pos[0])*self.cell_size + self.cell_size/2, float(self.goal_pos[1])*self.cell_size + self.cell_size/2), 5)
+        pygame.draw.circle(self.screen, (0, 0, 255), (float(self.current_pos[0])*self.cell_size + self.cell_size/2, float(self.current_pos[1])*self.cell_size + self.cell_size/2), 5)
 
         pygame.display.update()
         if mode != None:
@@ -148,3 +134,8 @@ class TestEnv(gym.Env):
         if dist_sq <= r_sq:
             return 1
         return np.exp(r_sq - dist_sq)
+    
+    def get_wind(self, pos=None):
+        if pos == None:
+            return self.wind[int(self.current_pos[0]), int(self.current_pos[1])]
+        return self.wind[int(pos[0]), int(pos[1])]
