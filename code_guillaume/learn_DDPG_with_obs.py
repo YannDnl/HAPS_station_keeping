@@ -13,7 +13,7 @@ from utils_DDPG import evaluate, load_best_weights, visual_test
 
 from tqdm import tqdm
 
-device=torch.device("cpu")
+device=torch.device("cuda")
 
 gym.register(
     id="TestEnvContMultiagent2DWithObservation-v0",
@@ -27,10 +27,10 @@ gym.register(
 )
 
 x,y,z= 50, 50, 50
-x,y,z= 5, 5, 5
+x,y,z= 20, 20, 20
 wind = torch.rand((2,x,y,z))
 
-n_agents=1
+n_agents=10
 env = gym.make('TestEnvContMultiagentWithObservation-v0', wind=wind, max_steps=1000, random_mode=0, n_agents=n_agents, render_mode=None)
 env = DummyVecEnv([lambda: env])
 
@@ -44,11 +44,14 @@ action_noise = NormalActionNoise(mean=np.zeros(env.action_space.shape), sigma=no
 policy_kwargs = dict(features_extractor_class=CustomFeatureExtractor, features_extractor_kwargs=dict(features_dim=128))
 
 # Create the DDPG agent
-model = DDPG('MultiInputPolicy', env, policy_kwargs=policy_kwargs, verbose=1, action_noise=action_noise, buffer_size=1000, device=device)
+model = DDPG('MultiInputPolicy', env, policy_kwargs=policy_kwargs, verbose=1, action_noise=action_noise, buffer_size=100000, device=device, optimize_memory_usage=False)
+
+load_best_weights(model,f"ddpg_multiagent_3d_wt_obs/{n_agents}")
 
 # Training
 for i in tqdm(range(100)):
-    model.learn(total_timesteps=50000)
+    # load_best_weights(model,f"ddpg_multiagent_3d_wt_obs/{n_agents}")
+    model.learn(total_timesteps=50000, progress_bar=True)
     # Save the trained model
     score = evaluate(model, 100)
     print(score)
