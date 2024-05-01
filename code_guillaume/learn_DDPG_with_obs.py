@@ -44,13 +44,13 @@ action_noise = NormalActionNoise(mean=np.zeros(env.action_space.shape), sigma=no
 policy_kwargs = dict(features_extractor_class=CustomFeatureExtractor, features_extractor_kwargs=dict(features_dim=128))
 
 # Create the DDPG agent
-model = DDPG('MultiInputPolicy', env, policy_kwargs=policy_kwargs, verbose=1, action_noise=action_noise, buffer_size=100000, device=device, optimize_memory_usage=True, batch_size=512)
+model = DDPG('MultiInputPolicy', env, policy_kwargs=policy_kwargs, verbose=1, action_noise=action_noise, buffer_size=100000, device=device, optimize_memory_usage=False)
 
 load_best_weights(model,f"ddpg_multiagent_3d_wt_obs/{n_agents}")
 
 # Training
 for i in tqdm(range(100)):
-    load_best_weights(model,f"ddpg_multiagent_3d_wt_obs/{n_agents}")
+    # load_best_weights(model,f"ddpg_multiagent_3d_wt_obs/{n_agents}")
     model.learn(total_timesteps=50000, progress_bar=True)
     # Save the trained model
     score = evaluate(model, 100)
