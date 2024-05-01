@@ -25,8 +25,8 @@ c = 10000000.           #capacité de la batterie en joule (ici environ 3kWh, 10
 ##Paramètres du modèle
 cd = 0.4                #saut de la fonction reward
 T = 100.                #distance caractéristique de la fonction reward
-dt = 0.1                #Pas de temps du modèle, doit diviser 6 pour la méthode next_state de la classe ballon
-dmv = 0.01              #Pas de masse volumique
+dt = 0.005               #Pas de temps du modèle, doit diviser 6 pour la méthode next_state de la classe ballon
+dmv = 0.0005             #Pas de masse volumique
 P_out = n * K * V * dmv #Pas de consomation d'énergie
 P_in = 0                #Pas de production d'énergie (panneau solaires)
 
@@ -46,7 +46,7 @@ def conversion_z_to_mv(z):
     return conversion_p_to_mv(conversion_z_to_p(z))
 
 def conversion_p_to_z(p):
-    return np.log(A/p) * K/g
+    return (np.log(A)-np.log(p)) * K/g
 
 def conversion_p_to_mv(p):
     return 100 * p/K
@@ -63,13 +63,20 @@ def mv_prime(mv):
 ##Trajectoire
 
 def distance(a, b):
-    return R * np.arccos(np.cos((a[0] - b[0]) * np.pi/180) * np.cos((a[1] - b[1]) * np.pi/180))
+    return R * np.arccos(np.cos((a[0] - b[0]) * np.pi/180) * np.cos((a[1] - b[1]) * np.pi/180))/1000
 
-def new_altitude(z: float, old_z: float, mv:float, old_mv) -> float:
-    adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
-    f = g * (1 - np.exp(-g * (conversion_p_to_z(z) - conversion_mv_to_z(mv_prime(mv)))/K))
-    ans = (4 * conversion_p_to_z(z) - 2 * f * (dt**2) + - (adt + 2) * conversion_p_to_z(old_z))/(2 - adt)
-    return ans
+def f(z, mv):
+    return conversion_z_to_mv(z)/mv_prime(mv)
+
+def new_altitude(z: float, dzdt: float, mv:float, dmvdt) -> float:
+    t = dt * 3600
+    a = dmvdt/mv_prime(mv)
+    new_dzdt = dzdt * (1 - t * (a + (1 - a * t) * (a))/2) - t * g * ((1 - f(z, mv)) * (1 - t * (a)) + 1 - f(z + dzdt * t, mv + dmvdt * t))/2
+    new_z = z + t * (dzdt + new_dzdt)/2
+    #adt = g * (conversion_mv_to_z(mv_prime(mv)) - conversion_mv_to_z(mv_prime(old_mv)))/K
+    #f = g * (1 - conversion_z_to_mv(z)/(mv_prime(mv)))
+    #new_z = ((4 + adt) * z - 2 * f * ((dt * 3600)**2) - (adt + 2) * old_z)/2
+    return conversion_z_to_p(new_z), new_dzdt
 
 ##Evolution du temps
 

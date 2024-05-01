@@ -2,6 +2,8 @@ import datetime
 import numpy as np
 
 from environnement.data_access.request_build.requests_manager import fetch,get,delete,metadata
+import parametres_entrainement as pe
+import environnement.parametres_ballon as pb
 
 jours = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
@@ -30,13 +32,12 @@ def back_time(time):
         time['hour'] = time['hour']%24
         time['day'] -= 1
         if(time['day'] < 1):
-            time['month'] -= 1
+            time['month'] = (time['month'] - 2)%12 + 1
             limite = jours[time['month'] - 1]
             if(time['month'] == 2 and time['year']%4 == 0):
                 limite += 1
             time['day'] = limite
-            if(time['month'] < 1):
-                time['month'] = 12
+            if(time['month'] == 12):
                 time['year'] -= 1
 
 def request_vent(request_item):
@@ -47,8 +48,9 @@ def request_vent(request_item):
 def get_data(start_date):
     start_time = datetime.datetime(year = start_date['year'], month = start_date['month'], day = start_date['day'], hour = start_date['hour'])
     end_time = start_date
-    end_time['year'] += 1
-    back_time(end_time)
+    for _ in range((int(pe.duration) + 2) * 4):
+        pb.update_time(end_time)
+    #back_time(end_time)
     end_time = datetime.datetime(year = end_time['year'], month = end_time['month'], day = end_time['day'], hour = end_time['hour'])
     request_item['bounds']['time'] = np.array([start_time, end_time])
     request_item['bounds']['latitude'] = np.array([-90 + i * 2.5 for i in range(73)])  #de -90 à 90 avec un pas de 2.5

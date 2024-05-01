@@ -56,7 +56,6 @@ for i in tqdm(range(100)):
     score = evaluate(model, 100)
     print(score)
     #visual_test(model)
-    model.save(f"ddpg_multiagent_3d_wt_obs/{n_agents}/ddpg_{score}")
-
+    model.save(f"ddpg_multiagent_3d_wt_obs/{n_agents}/ddpg_{score}")                                                    
 # Close the environment
 env.close()
