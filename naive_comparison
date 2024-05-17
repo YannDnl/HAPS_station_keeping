@@ -12,7 +12,7 @@ import naive_em
 import numpy as np
 import copy
 
-n = 5
+n = 1
 
 start_time = {'year': 2020, 'month': 1, 'day': 1, 'hour': 0, 'steps': 0}
 target = [1600, 0]

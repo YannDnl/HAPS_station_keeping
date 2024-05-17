@@ -1,9 +1,10 @@
 import environnement.parametres_ballon as pb
+import environnement.parametres_air as pa
 import environnement.air as air
 import numpy as np
 
 class Ballon:
-    def __init__(self, vent:list, time:dict, pos:list, z:float, target:tuple, seul = False) -> None:
+    def __init__(self, time:dict, pos:list, z:float, target:tuple, seul = False) -> None:
         self.pos = pos                      #position: latitude puis longitude
         self.z = z                          #altitude par la pression
         self.dzdt = 0                      #altitude au pas de temps précédent
@@ -19,7 +20,7 @@ class Ballon:
         self.last_action = 0
         self.seul = seul
 
-        self.air = air.Air(vent)
+        #self.air = air.Air(vent)
 
     def copy(self):
         return Ballon(self.air.data_vent, self.time, self.pos.copy(), self.z, self.target, self.seul)
@@ -41,7 +42,7 @@ class Ballon:
             r = 0.95 - 0.3 * self.de
         return f * r
     
-    def next_state(self, action:int) -> None:
+    def next_state(self, vent, action:int) -> None:
         self.last_action = action
         if(self.seul):
             self.time['steps'] += pb.dt
@@ -50,7 +51,7 @@ class Ballon:
         if(self.soleil and self.s < pb.c):
             self.s = min(pb.c, self.s + pb.P_in)
         self.update_soleil()
-        self.bearing = self.air.new_pos(self.pos, self.z, self.time, pb.dt, self.target)
+        self.bearing = pa.new_pos(vent, self.pos, self.target)
         if(action * (pb.conversion_mv_to_p(pb.mv_prime(self.mv)) - self.z) >= 0):
             self.de = pb.P_out
         else:

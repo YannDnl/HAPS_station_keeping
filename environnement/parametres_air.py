@@ -3,6 +3,10 @@ import datetime
 import environnement.parametres_ballon as pb
 R = pb.R
 
+longitude = np.array([i * 2.5 for i in range(144)])      #de 0 à 357.5 avec un pas de 2.5
+latitude = np.array([-90 + i * 2.5 for i in range(73)])  #de -90 à 90 avec un pas de 2.5
+pressure = np.array([10., 20., 30., 50., 70., 100., 150., 200., 250., 300., 400., 500., 600., 700., 850., 925., 1000.])
+
 ##Récupération du vent
 
 def interpolation(pos, pressure, hour, vent, request_bounds) -> list:#vent liste des liste de vents a interpoler
@@ -55,3 +59,22 @@ def update_longitude(teta):
         else:
             teta = -180 -teta
     return teta
+
+def get_vent_pos(data_vent, ballon):
+        t = int(ballon.time['steps']//6)
+        low_lon = recherche(longitude, ballon.pos[1])
+        low_lat = recherche(latitude, ballon.pos[0])
+        low_p = recherche(pressure, ballon.z)
+        request_vent = data_vent[t : t + 2, low_p : low_p + 2, low_lon : low_lon + 2, low_lat : low_lat + 2]
+        request_bounds = {'time': [t, t + 1], 'pressure': [pressure[low_p], pressure[low_p + 1]], 'latitude': [latitude[low_lat], latitude[low_lat + 1]], 'longitude': [longitude[low_lon], longitude[low_lon + 1]]}
+        vent = interpolation(ballon.pos, [ballon.z], ballon.time['steps'], request_vent, request_bounds)[0]
+        vent[0], vent[1] = vent[1], vent[0]
+        return vent
+
+def new_pos(vent, pos: list, target: tuple):
+    pos[0] += 180 * vent[0] * pb.dt * 3600/(np.pi * R)
+    pos[0] = update_longitude(pos[0])
+    pos[1] += 180 * vent[1] * pb.dt * 3600/(np.pi * R)
+    pos[1] = pos[1]%360
+    vector = np.array(target) - np.array(pos)
+    return np.array([np.dot(vent, vector), np.cross(vent, vector)])/(np.linalg.norm(vent) * np.linalg.norm(vector))
