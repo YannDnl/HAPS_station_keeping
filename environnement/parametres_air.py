@@ -60,8 +60,8 @@ def update_longitude(teta):
             teta = -180 -teta
     return teta
 
-def get_vent_pos(data_vent, ballon):
-        t = int(ballon.time['steps']//6)
+def get_vent_pos(data_vent, start_time_index, ballon):
+        t = int(ballon.time['steps']//6) + start_time_index
         low_lon = recherche(longitude, ballon.pos[1])
         low_lat = recherche(latitude, ballon.pos[0])
         low_p = recherche(pressure, ballon.z)

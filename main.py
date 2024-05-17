@@ -6,8 +6,9 @@ import environnement.data as data
 
 time = {'year': 2020, 'month': 1, 'day': 1, 'hour': 0, 'steps': 0}
 
-target, start_time = pe.position_initiale(time)
-donnee_vent = data.get_data(start_time)
+
+donnee_vent = data.get_data(time)
+target, start_time_index = pe.position_initiale(time)
 
 n = 10
 size = 1
