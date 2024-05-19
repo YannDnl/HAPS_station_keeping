@@ -3,6 +3,7 @@ import numpy as np
 from torch import nn
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+
 class CustomActorNetwork(nn.Module):
     def __init__(self, observation_space, action_space, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -128,7 +129,7 @@ class CustomCriticNetwork(nn.Module):
         return state
 
 class CustomFeatureExtractor(BaseFeaturesExtractor):
-    def __init__(self, observation_space, features_dim=128):
+    def __init__(self, observation_space, features_dim=128, device="cpu"):
         super().__init__(observation_space, features_dim)
         shape_os_wind = observation_space["wind"].shape
         shape_os_bp = observation_space["pos"].shape
@@ -145,7 +146,7 @@ class CustomFeatureExtractor(BaseFeaturesExtractor):
             min_d = min_d//4
             chs = 2*chs
         
-        self.conv_net = nn.ModuleList(cn)
+        self.conv_net = nn.ModuleList(cn).to(device)
 
         shp = torch.zeros(shape_os_wind)
         for l in self.conv_net:
@@ -174,7 +175,7 @@ class CustomFeatureExtractor(BaseFeaturesExtractor):
             nn.ReLU(),
 
             nn.Linear(64, features_dim),
-            ])
+            ]).to(device)
 
     def forward(self, x):
         wnds = x["wind"]

@@ -5,27 +5,32 @@ import pygame
 
 gym.register(
     id="TestEnvSimple-v0",
-    entry_point="testenv:TestEnv",
+    entry_point="environments.testenv:TestEnv",
     kwargs={"wind": None}
 )
 
-h,w = 5, 10
-wind = np.array([[i-(h//2) for j in range(w)] for i in range(h)])
+x,y = 50, 15
+wind = np.array([[j-(y//2) for j in range(y)] for i in range(x)])
 
-env = gym.make('TestEnvSimple-v0', wind=wind, start=[0,w-1], goal=[h-1,w-1], max_steps=1000, random_mode=0)
+env = gym.make('TestEnvSimple-v0', wind=wind, max_steps=1000, random_mode=1, render_mode="human")
 obs = env.reset()
-env.render()
 
 done = False
 
 count = 0
 
-while count < 10:
+scores = 0
+score = 0
+while count < 100:
     action = env.action_space.sample()  # Random action selection
     obs, reward, done, _ = env.step(action)
-    env.render(mode="human")
+    score += reward
     if(done):
-        print('Reward:', reward)
+        print('Reward:', score)
         print('Count:', env.count)
         count+=1
+        scores += score
+        score = 0
         env.reset()
+
+print(scores/(100))
